@@ -1,0 +1,119 @@
+function taxiapp_calc_script() {
+  if (is_page('calcul-tarif-convention-cadre')) { ?>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  const trip = document.getElementById('tripType');
+
+  function toggleSections(){
+    const isHosp = trip.value === 'hospitalisation';
+    document.getElementById('hospitalisationFields').style.display = isHosp ? '' : 'none';
+    document.getElementById('consultationFields').style.display   = isHosp ? 'none' : '';
+    document.getElementById('consultationShare').style.display     = isHosp ? 'none' : '';
+  }
+  trip.addEventListener('change', toggleSections);
+  toggleSections();
+
+  function round2(x){ return Math.round((x + Number.EPSILON) * 100) / 100; }
+
+  function calc(){
+    const deptEl  = document.getElementById('dept');
+    const deptRate = parseFloat(deptEl.value); // <- LECTURE DIRECTE DU SELECT (fix)
+    const isGV    = document.getElementById('isGrandeVille').checked;
+    const isNight = document.getElementById('isNightOrWeekend').checked;
+    const isTPMR  = document.getElementById('isTPMR').checked;
+    const isDROM  = document.getElementById('isDROM').checked;
+
+    const forfait = 13;
+    let total = 0;
+
+    if (trip.value === 'hospitalisation') {
+      const km    = parseFloat(document.getElementById('hospitalChargeKm').value) || 0;
+      const mode  = document.getElementById('hospTripType').value; // 'retour_vide' | 'trajet_unique'
+      const share = document.getElementById('isHospShared').checked;
+      const n     = parseInt(document.getElementById('numHospPatients').value) || 1;
+      const tolls = parseFloat(document.getElementById('hospTolls').value) || 0;
+
+      const kmFact = Math.max(0, km - 4);
+
+      // Tarif au km : majoré seulement en "aller ou retour à vide"
+      let kmRate;
+      if (mode === 'retour_vide') {
+        kmRate = deptRate * (km < 50 ? 1.25 : 1.50);
+        kmRate = Math.ceil(kmRate * 100) / 100; // arrondi au centime supérieur (ex 1.5875 => 1.59)
+      } else {
+        kmRate = deptRate; // trajet unique = même calcul que consultation
+      }
+
+      let socle = forfait + (isGV ? 15 : 0) + (kmFact * kmRate);
+      if (isNight) socle *= 1.5;
+
+      // Partage
+      let abatt = 0;
+      if (share && n >= 2) abatt = (n === 2 ? 0.23 : n === 3 ? 0.35 : 0.37);
+
+      const montant = round2(socle * (1 - abatt));
+
+      // Péages : AUCUNE ristourne. Partage éventuel si plusieurs patients.
+      const tollsPer = share ? round2(tolls / n) : round2(tolls);
+
+      const suppl = (isTPMR ? 30 : 0) + (isDROM ? 3 : 0);
+
+      total = round2(montant + tollsPer + suppl);
+
+      const labelTrip = (mode === 'retour_vide') ? ' (aller ou retour à vide)' : ' (trajet unique)';
+
+      document.getElementById('result').innerHTML = `
+        <strong style="font-size:16px">Total TTC${share ? " par patient " : " "}(Hospitalisation${labelTrip}) : ${total.toFixed(2)} €</strong><br>
+        <div style="margin-top:8px;font-size:13px">
+          Km en charge : ${km.toFixed(1)} — Km facturables : ${kmFact.toFixed(1)}<br>
+          Tarif km ${mode==='retour_vide'?'majoré':'(trajet unique)'} : ${kmRate.toFixed(2)} €/km<br>
+          ${isGV ? "Forfait GV 15 € — " : ""}${isNight ? "Nuit/WE +50 % — " : ""}
+          ${abatt>0?`Partage ${(abatt*100).toFixed(0)} % — `:""}Péages ${share?"par patient ":""}: ${tollsPer.toFixed(2)} €<br>
+          ${isTPMR?"TPMR +30 € — ":""}${isDROM?"DROM +3 € — ":""}
+        </div>`;
+    } else {
+      // CONSULTATION
+      const km     = parseFloat(document.getElementById('kmTotal').value) || 0;
+      const share  = document.getElementById('isShared').checked;
+      const n      = parseInt(document.getElementById('numPatients').value) || 1;
+      const tolls  = parseFloat(document.getElementById('tollsTotal').value) || 0;
+
+      const kmFact = Math.max(0, km - 4);
+
+      let socle = forfait + (isGV ? 15 : 0) + (kmFact * deptRate);
+      if (isNight) socle *= 1.5;
+
+      // Abattement transport partagé – sinon règle dérogatoire patient seul ≥ 30 km : 5 %
+      let abatt = 0;
+      if (share && n >= 2) abatt = (n === 2 ? 0.23 : n === 3 ? 0.35 : 0.37);
+      else if (!share && km >= 30) abatt = 0.05;
+
+      const montant = round2(socle * (1 - abatt));
+
+      // Péages : AUCUNE ristourne ; partagés si besoin
+      const tollsPer = share ? round2(tolls / n) : round2(tolls);
+
+      const suppl = (isTPMR ? 30 : 0) + (isDROM ? 3 : 0);
+
+      total = round2(montant + tollsPer + suppl);
+
+      document.getElementById('result').innerHTML = `
+        <strong style="font-size:16px">Total TTC${share?" par patient ":""}(Consultation) : ${total.toFixed(2)} €</strong><br>
+        <div style="margin-top:8px;font-size:13px">
+          Km : ${km.toFixed(1)} — Km facturables : ${kmFact.toFixed(1)}<br>
+          Tarif km : ${deptRate.toFixed(2)} €/km<br>
+          ${isGV?"Forfait GV 15 € — ":""}${isNight?"Nuit/WE +50 % — ":""}
+          ${abatt>0?`Abattement ${(abatt*100).toFixed(0)} % — `:""}Péages ${share?"par patient ":""}: ${tollsPer.toFixed(2)} €<br>
+          ${isTPMR?"TPMR +30 € — ":""}${isDROM?"DROM +3 € — ":""}
+        </div>`;
+    }
+  }
+
+  const btn = document.getElementById('calcBtn');
+  if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); calc(); });
+
+});
+</script>
+<?php } }
+add_action('wp_footer', 'taxiapp_calc_script');
