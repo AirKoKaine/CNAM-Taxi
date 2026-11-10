@@ -147,6 +147,7 @@ const T = {
 const COURTE_DISTANCE = { montant: 2, maxKm: 10, depuis: '2026-08-01' };
 const LOCAL_DEFAULT = { seuilSeul: 30, courteDistance: true, verifie: false, notes: [] };
 const LOCAL = {
+  '06': { seuilSeul: 30, courteDistance: true, verifie: 'CPAM 06, supplément courte distance confirmé par l\'entreprise (convention locale non publiée sur ameli.fr)', notes: [] },
   '13': { seuilSeul: 30, courteDistance: true, verifie: 'convention CPAM 13 (màj 03/07/2026)', notes: [
     'Péages urbains non pris en charge, sauf tunnel Prado-Carénage s\'il réduit le kilométrage (jamais Prado Sud).',
     'Contrôle du kilométrage sur la base du distancier ViaMichelin.'] },
