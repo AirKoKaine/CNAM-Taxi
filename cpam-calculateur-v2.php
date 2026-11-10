@@ -586,7 +586,7 @@ JS;
                 <div class="field"><label class="lbl" for="cpam2-seuil">Seuil « patient seul »</label><div class="unit"><input id="cpam2-seuil" class="ctl" type="number" min="30" step="1" value="30"><span>km</span></div></div>
                 <div class="field"><label class="lbl" for="cpam2-suppLocal">Autre supplément local validé Cnam</label><div class="unit"><input id="cpam2-suppLocal" class="ctl" type="number" min="0" step="0.01" placeholder="0"><span>€</span></div></div>
               </div>
-              <label class="check" style="margin-top:8px"><input type="checkbox" id="cpam2-cd" checked> Supplément courte distance de 2 € pour les trajets de moins de 10 km (à partir du 01/08/2026)</label>
+              <label class="check" style="margin-top:8px"><input type="checkbox" id="cpam2-cd" checked> Ma convention locale prévoit le supplément courte distance : 2 € ajoutés automatiquement aux seuls trajets de moins de 10 km, sans forfait Grande ville, effectués depuis le 01/08/2026</label>
             </div>
           </section>
 
