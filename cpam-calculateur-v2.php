@@ -6,9 +6,8 @@
  * Barème : convention-cadre taxis (arrêté du 29/07/2025, annexe 2), en vigueur au 01/11/2025.
  * Forfait Grande ville : 12 villes + 92/93/94 + établissements validés par la Cnam au 01/04/2026.
  *
- * Clé Google Maps : ajoutez dans wp-config.php
- *   define('CPAM2_GMAPS_KEY', 'votre-cle');
- * (la clé n'est pas stockée dans ce fichier pour ne pas la publier sur GitHub).
+ * Clé Google Maps : intégrée ci-dessous (peut être remplacée par la constante
+ * CPAM2_GMAPS_KEY définie dans wp-config.php).
  */
 add_shortcode('cpam_calculateur2', function () {
   if (!defined('CPAM2_ENQ')) {
@@ -520,8 +519,8 @@ JS;
     wp_enqueue_script('cpam2-js');
     wp_add_inline_script('cpam2-js', $js);
 
-    /* Google Maps (Places + Directions) — clé définie dans wp-config.php */
-    $key = defined('CPAM2_GMAPS_KEY') ? CPAM2_GMAPS_KEY : '';
+    /* Google Maps (Places + Directions) */
+    $key = defined('CPAM2_GMAPS_KEY') ? CPAM2_GMAPS_KEY : 'AIzaSyCqyT4qHRHK9kkSSC66YqHJ_V_Z99OsJGc';
     if ($key !== '') {
       $url = 'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode($key) . '&libraries=places&language=fr&region=FR&callback=cpamCalcInit_v2';
       wp_enqueue_script('cpam2-gmaps', $url, array('cpam2-js'), null, true);
