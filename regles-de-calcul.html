@@ -1,7 +1,9 @@
 <!-- Page « Règles de calcul » : à coller dans un bloc HTML personnalisé de WordPress (remplace l'ancien bloc). -->
 <style>
 #regles{--ink:#1b2430;--muted:#5b6675;--line:#dde3ea;--ground:#f4f6f8;--surface:#fff;--accent:#0b5fb0;--accent-soft:#e9f1fb;--good:#1a7f4b;--good-soft:#e6f4ec;--warn:#9a5b00;--warn-soft:#fff4e0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.55;color:var(--ink);max-width:860px;margin:0 auto;font-variant-numeric:tabular-nums}
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.55;color:var(--ink);background:var(--ground);max-width:900px;margin:0 auto;padding:28px 24px 24px;border-radius:12px;font-variant-numeric:tabular-nums}
+#regles p,#regles li,#regles td,#regles th,#regles summary,#regles .lead{color:inherit}
+#regles .muted,#regles .lead,#regles th,#regles .foot{color:var(--muted)}
 #regles *{box-sizing:border-box;min-width:0}
 #regles h1,#regles h2,#regles h3,#regles h4{margin:0;line-height:1.25;letter-spacing:-.01em;color:var(--ink)}
 #regles h1{font-size:28px;font-weight:600}
@@ -41,7 +43,7 @@
 #regles details p:last-child{padding-bottom:12px}
 #regles .foot{font-size:13px;color:var(--muted);margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
 #regles a{color:var(--accent)}
-@media (max-width:600px){#regles{font-size:15px}#regles h1{font-size:24px}#regles .calc .row{flex-direction:column;gap:0}}
+@media (max-width:600px){#regles{font-size:15px;padding:20px 14px;border-radius:0}#regles h1{font-size:24px}#regles .calc .row{flex-direction:column;gap:0}}
 </style>
 
 <div id="regles">
