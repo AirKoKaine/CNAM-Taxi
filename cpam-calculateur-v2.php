@@ -134,6 +134,39 @@ const T = {
   franchise: 4, franchiseJour: 8               // franchise médicale (déduite du remboursement)
 };
 
+/* =====================================================================
+   DISPOSITIONS LOCALES (conventions départementales publiées sur ameli.fr,
+   relevées le 10/11/2026). Clé = code département de l'ADS.
+   - seuilSeul : seuil km « patient seul » (abattement 5 %), 30 km minimum national
+   - courteDistance : supplément local « courte distance » validé Cnam
+       2 € par trajet strictement < 10 km, trajets à partir du 01/08/2026,
+       non facturable avec le forfait Grande ville, non majoré nuit/dimanche/férié,
+       soumis à l'abattement transport partagé, cumulable avec le DROM.
+   - notes : particularités d'application relevées dans la convention ou la FAQ locale
+   ===================================================================== */
+const COURTE_DISTANCE = { montant: 2, maxKm: 10, depuis: '2026-08-01' };
+const LOCAL_DEFAULT = { seuilSeul: 30, courteDistance: true, verifie: false, notes: [] };
+const LOCAL = {
+  '13': { seuilSeul: 30, courteDistance: true, verifie: 'convention CPAM 13 (màj 03/07/2026)', notes: [
+    'Péages urbains non pris en charge, sauf tunnel Prado-Carénage s\'il réduit le kilométrage (jamais Prado Sud).',
+    'Contrôle du kilométrage sur la base du distancier ViaMichelin.'] },
+  '24': { seuilSeul: 30, courteDistance: true, verifie: 'convention CPAM 24 (30/09/2025, màj 07/2026)', notes: [
+    'Aller/retour à vide : la prescription cochée « hospitalisation » (ou mentionnant chimio, radio, dialyse) suffit comme justificatif ; sinon fournir le bulletin de situation.',
+    'Télépéage : bordereau mensuel à déposer sur cpam24.fr, mention « Télépéage » sur la facture.'] },
+  '34': { seuilSeul: 30, courteDistance: true, verifie: 'convention CPAM 34 (01/08/2026)', notes: [] },
+  '44': { seuilSeul: 30, courteDistance: true, verifie: 'convention CPAM 44 (01/11/2025)', notes: [] },
+  '69': { seuilSeul: 30, courteDistance: true, verifie: 'convention CPAM 69 (11/2025) et FAQ du 30/12/2025', notes: [
+    'Aller/retour à vide refusé si l\'établissement est dans la même zone que l\'ADS (ex. ADS Lyon ou ZUPC vers un hôpital de Lyon, Bron, Vénissieux).',
+    'Bulletin de situation exigé pour la majoration à vide, même si la prescription coche « hospitalisation ».',
+    'Contrôle du kilométrage sur la base de Google Maps.'] },
+  '74': { seuilSeul: 30, courteDistance: true, verifie: 'convention CPAM 74 (11/2025)', notes: [
+    'Supplément courte distance absent de la version de la convention consultée (antérieure au 01/08/2026) : à confirmer auprès de la CPAM.',
+    'Péages : abonnement autoroutier à répercuter, bordereaux à conserver 2 ans.'] },
+  '75': { seuilSeul: 30, courteDistance: true, verifie: 'convention CPAM 75 (2025-2029)', notes: [
+    'Supplément courte distance absent de la version consultée ; sans objet pour les trajets avec forfait Grande ville (Paris).'] }
+};
+function localRules(dept){ return Object.assign({}, LOCAL_DEFAULT, LOCAL[dept] || {}); }
+
 /* ================= FORFAIT GRANDE VILLE ================= */
 const GV_VILLES = ['Marseille','Paris','Nice','Toulouse','Lyon','Strasbourg','Montpellier','Rennes','Bordeaux','Lille','Grenoble','Nantes'];
 const GV_DEPTS = {'92':'Hauts-de-Seine','93':'Seine-Saint-Denis','94':'Val-de-Marne'};
@@ -384,7 +417,27 @@ function patientCard(i){
 function nbPatients(){ return parseInt($('#cpam2-nbPatients')?.value||'1',10); }
 function deptCode(){ return $('#cpam2-dept')?.selectedOptions[0]?.dataset.code || '06'; }
 function isDromDept(){ return !!$('#cpam2-dept')?.selectedOptions[0]?.dataset.drom; }
-function seuilSeul(){ return Math.max(T.seuilSeulMin, parseFloat($('#cpam2-seuilSeul')?.value)||T.seuilSeulMin); }
+function seuilSeul(){ return Math.max(T.seuilSeulMin, parseFloat($('#cpam2-seuilSeul')?.value)||localRules(deptCode()).seuilSeul); }
+/** Applique les dispositions locales du département de l'ADS (seuil, supplément courte distance, notes). */
+function updateLocalUI(){
+  const dept=deptCode(), L=localRules(dept);
+  const ss=$('#cpam2-seuilSeul'); if(ss && ss.dataset.auto!=='0'){ ss.value=String(L.seuilSeul); ss.dataset.auto='1'; }
+  const cd=$('#cpam2-courteDistance'); if(cd && cd.dataset.auto!=='0'){ cd.checked=!!L.courteDistance; cd.dataset.auto='1'; }
+  const box=$('#cpam2-localInfo');
+  if(box){
+    const lines=[];
+    lines.push(L.verifie ? `Dispositions locales vérifiées : ${esc(L.verifie)}.` : `Convention locale du ${esc(dept)} non publiée sur ameli.fr : valeurs nationales par défaut (seuil 30 km, supplément courte distance tel que diffusé par la Cnam au 01/08/2026). Vérifiez auprès de votre CPAM.`);
+    L.notes.forEach(n=> lines.push('• '+esc(n)));
+    box.innerHTML=lines.join('<br>');
+  }
+}
+/** Supplément « courte distance » dû pour un trajet (0 sinon). */
+function courteDistance(dist, isGV, dateStr){
+  if(!$('#cpam2-courteDistance')?.checked) return 0;
+  if(isGV || !(dist>0) || dist>=COURTE_DISTANCE.maxKm) return 0;
+  if(dateStr && dateStr < COURTE_DISTANCE.depuis) return 0; // sans date : trajet supposé actuel
+  return COURTE_DISTANCE.montant;
+}
 
 function rebuildPatientIndex(){
   const nb=nbPatients();
@@ -416,7 +469,6 @@ function compute(){
   const tarifBase=parseFloat(deptOpt?.value)||1.07;
   const dept=deptCode();
   const suppLocal=Math.max(0, parseFloat($('#cpam2-suppLocal')?.value)||0);
-  const suppForf=r2((isDromDept()?T.drom:0) + suppLocal);
   const nb=nbPatients();
   const seuil=seuilSeul();
 
@@ -443,6 +495,10 @@ function compute(){
     const periode = selP==='auto' ? (auto?.code||'J') : selP;
     const periodeTxt = selP==='auto' ? (auto?.txt||'jour (date/heure non renseignées)') : ({J:'jour',NU:'nuit',DF:'samedi après 12 h, dimanche ou férié'}[selP]);
     const coefMaj = periode==='J' ? 0 : T.majoration;
+
+    // 0. Suppléments forfaitaires (SUPPLEMENT FORFAITAIRE-001/002) : DROM + courte distance + autre supplément local
+    const cdAmt = courteDistance(dist, isGV, $(`#cpam2-p${i}-date`)?.value);
+    const suppForf = r2((isDromDept()?T.drom:0) + cdAmt + suppLocal);
 
     // 1. Forfait (FORFAIT-002/003)
     const forfaitBase = isGV ? T.forfaitGV : T.forfait;
@@ -482,7 +538,8 @@ function compute(){
       <div class="chip">${isGV?'Forfait Grande ville 28 €':'Forfait 13 €'}</div>
       <div class="chip">${fr(distFact,0)} km × ${fr(tarifKm)} €${coefVide?` (+${Math.round(coefVide*100)} % hospitalisation à vide)`:''}</div>
       ${coefMaj?`<div class="chip">+50 % ${esc(periodeTxt)}</div>`:''}
-      ${suppForf?`<div class="chip">Suppléments forfaitaires ${fr(suppForf)} €</div>`:''}
+      ${cdAmt?`<div class="chip">Courte distance (&lt; 10 km) ${fr(cdAmt)} €</div>`:''}
+      ${suppForf-cdAmt>0?`<div class="chip">Autres suppléments forfaitaires ${fr(r2(suppForf-cdAmt))} €</div>`:''}
       ${abatt?`<div class="chip">${esc(abTxt)}</div>`:''}
       ${peage?`<div class="chip">Péage ${fr(peage)} €${tollDiv>1?` (${fr(tolls)} € ÷ ${tollDiv})`:''}</div>`:''}
       ${tpmr?'<div class="chip">TPMR 30 €</div>':''}
@@ -497,7 +554,11 @@ function compute(){
     if(coefMaj){
       L.push(`• Majoration ${esc(periodeTxt)} : forfait ${fr(forfaitBase)} € × 50 % = ${fr(forfaitMaj)} € ; km : ${fr(r2(tarifKm*coefMaj))} € × ${fr(distFact,0)} km = ${fr(kmMaj)} €`);
     } else L.push(`• Période : ${esc(periodeTxt)}, pas de majoration`);
-    if(suppForf) L.push(`• Suppléments forfaitaires${isDromDept()?' (dont DROM 3 €)':''} : ${fr(suppForf)} € (non majorés)`);
+    if(suppForf){
+      const parts=[]; if(isDromDept()) parts.push('DROM 3,00 €'); if(cdAmt) parts.push(`courte distance ${fr(cdAmt)} € (trajet < 10 km sans forfait Grande ville)`); if(suppLocal) parts.push(`autre supplément local ${fr(suppLocal)} €`);
+      L.push(`• Suppléments forfaitaires : ${parts.join(' + ')} = ${fr(suppForf)} € (non majorés nuit/dimanche/férié, soumis à l'abattement)`);
+    }
+    if(!cdAmt && $('#cpam2-courteDistance')?.checked && dist>0 && dist<COURTE_DISTANCE.maxKm && isGV) L.push(`• Supplément courte distance non dû : trajet avec forfait Grande ville`);
     if(abatt){
       L.push(`• Abattement ${esc(abTxt)} : forfait ${fr(forfaitBase+forfaitMaj)} € → ${fr(forfaitApres)} € ; km ${fr(kmBase+kmMaj)} € → ${fr(kmApres)} €${suppForf?` ; suppléments ${fr(suppForf)} € → ${fr(suppApres)} €`:''}`);
     }
@@ -528,6 +589,10 @@ function compute(){
     rules.push(`Majoration de 50 % sur le forfait et les km : nuit si plus de la moitié du trajet a lieu entre 20 h et 8 h, sinon samedi dès 12 h, dimanche ou jour férié. Pas de cumul.`);
   if(nbMalades>=2)
     rules.push(`Transport partagé : une facture par patient sur sa propre distance. L'abattement porte sur le forfait, les km, la majoration et les suppléments forfaitaires, jamais sur le péage ni sur le TPMR.`);
+  if(details.some(t=>t.includes('courte distance')))
+    rules.push(`Supplément local « courte distance » (validé Cnam, trajets à partir du 01/08/2026) : 2 € par trajet strictement inférieur à 10 km, non cumulable avec le forfait Grande ville, non majoré, abattu en transport partagé, cumulable avec le DROM.`);
+  const Lr=localRules(dept);
+  if(Lr.notes.length) rules.push(`Particularités de la CPAM ${esc(dept)} : `+Lr.notes.map(esc).join(' '));
 
   const block = `**Règles appliquées**\n• `+rules.join('\n• ')+`\n\n**Détail de calcul**\n`+details.join('\n\n');
   $('#cpam2-explain').innerHTML = esc(block).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
@@ -584,7 +649,9 @@ function hardReset(){
   const opt=$('#cpam2-dept').querySelector('option[data-code="06"]'); if(opt) opt.selected=true;
   $('#cpam2-nbPatients').value='1';
   const sl=$('#cpam2-suppLocal'); if(sl) sl.value='0';
-  const ss=$('#cpam2-seuilSeul'); if(ss) ss.value='30';
+  const ss=$('#cpam2-seuilSeul'); if(ss){ ss.value='30'; ss.dataset.auto='1'; }
+  const cd=$('#cpam2-courteDistance'); if(cd) cd.dataset.auto='1';
+  updateLocalUI();
   ['cpam2-addrPickup','cpam2-addrDrop'].forEach(id=>{const el=document.getElementById(id); if(el){ el.value=''; el.dataset.full=''; }});
   ['cpam2-avoidTolls','cpam2-avoidHighways'].forEach(id=>{const el=document.getElementById(id); if(el) el.checked=false;});
   document.querySelector('input[name="cpam2-roundMode"][value="down"]').checked=true;
@@ -606,7 +673,9 @@ function regen(){
 }
 document.addEventListener('DOMContentLoaded', ()=>{
   if(!$('#cpam2-root')) return;
-  regen(); updateDromInfo(); gvFromAddresses();
+  regen(); updateDromInfo(); updateLocalUI(); gvFromAddresses();
+  $('#cpam2-seuilSeul')?.addEventListener('input', e=>{ e.target.dataset.auto='0'; });
+  $('#cpam2-courteDistance')?.addEventListener('change', e=>{ e.target.dataset.auto='0'; if($('#cpam2-result').innerHTML) compute(); });
   $('#cpam2-nbPatients')?.addEventListener('change', ()=>{
     const before=getPatientIndex();
     const saved={}; $$('#cpam2-forms input, #cpam2-forms select').forEach(el=>{ saved[el.id]=(el.type==='checkbox') ? el.checked : el.value; });
@@ -616,7 +685,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     $('#cpam2-patientIndex').value=String(Math.min(before, nbPatients()));
     if($('#cpam2-result').innerHTML) compute();
   });
-  ['#cpam2-dept','#cpam2-suppLocal','#cpam2-seuilSeul'].forEach(s=> $(s)?.addEventListener('change', ()=>{ updateDromInfo(); updatePatientUI(); if($('#cpam2-result').innerHTML) compute(); }));
+  $('#cpam2-dept')?.addEventListener('change', ()=>{ updateDromInfo(); updateLocalUI(); updatePatientUI(); if($('#cpam2-result').innerHTML) compute(); });
+  ['#cpam2-suppLocal','#cpam2-seuilSeul'].forEach(s=> $(s)?.addEventListener('change', ()=>{ updatePatientUI(); if($('#cpam2-result').innerHTML) compute(); }));
   ['#cpam2-addrPickup','#cpam2-addrDrop'].forEach(s=> $(s)?.addEventListener('input', e=>{ e.target.dataset.full=''; gvFromAddresses(); }));
   $('#cpam2-calcBtn')?.addEventListener('click', e=>{e.preventDefault(); compute();});
   $('#cpam2-btnDistance')?.addEventListener('click', e=>{e.preventDefault(); computeDistance();});
@@ -811,15 +881,24 @@ JS;
                 <option>5</option><option>6</option><option>7</option><option>8</option>
               </select>
             </div>
+            <div class="field" style="grid-column:1 / -1">
+              <span class="label">Dispositions de la convention locale du département de l'ADS</span>
+              <div id="cpam2-localInfo" class="hint" style="font-size:13px"></div>
+            </div>
             <div class="field">
               <label class="label" for="cpam2-seuilSeul">Seuil local « patient seul » (km)</label>
               <input id="cpam2-seuilSeul" class="input" type="number" min="30" step="1" value="30">
-              <div class="hint">Fixé par la convention locale avec la CPAM de l'ADS (30 km minimum).</div>
+              <div class="hint">Renseigné d'après la convention locale (30 km minimum national) ; modifiable.</div>
             </div>
             <div class="field">
-              <label class="label" for="cpam2-suppLocal">Supplément local validé par la Cnam (€ par trajet)</label>
+              <span class="label">Supplément « courte distance »</span>
+              <label class="check"><input id="cpam2-courteDistance" type="checkbox" checked> 2 € par trajet &lt; 10 km, à partir du 01/08/2026 (prévu par ma convention locale)</label>
+              <div class="hint">Appliqué automatiquement au trajet éligible ; jamais avec le forfait Grande ville.</div>
+            </div>
+            <div class="field">
+              <label class="label" for="cpam2-suppLocal">Autre supplément local validé par la Cnam (€ par trajet)</label>
               <input id="cpam2-suppLocal" class="input" type="number" min="0" step="0.01" value="0">
-              <div class="hint">Uniquement si votre convention locale en prévoit un (sinon 0).</div>
+              <div class="hint">Ex. supplément de carence négocié localement (sinon 0).</div>
             </div>
           </div>
         </section>
