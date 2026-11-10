@@ -7,8 +7,7 @@
  * Règles de calcul et d'arrondi : cahier des charges Cnam de facturation B2 taxis (v2.1, 23/09/2025).
  * Forfait Grande ville : 12 villes + 92/93/94 + établissements validés par la Cnam au 01/04/2026.
  *
- * Clé Google Maps : intégrée ci-dessous (peut être remplacée par la constante
- * CPAM2_GMAPS_KEY définie dans wp-config.php).
+ * Clé Google Maps intégrée dans le fichier (ne pas la retirer).
  */
 add_shortcode('cpam_calculateur2', function () {
   if (!defined('CPAM2_ENQ')) {
@@ -710,7 +709,7 @@ JS;
     wp_add_inline_script('cpam2-js', $js);
 
     /* Google Maps (Places + Directions) */
-    $key = defined('CPAM2_GMAPS_KEY') ? CPAM2_GMAPS_KEY : 'AIzaSyCqyT4qHRHK9kkSSC66YqHJ_V_Z99OsJGc';
+    $key = 'AIzaSyCqyT4qHRHK9kkSSC66YqHJ_V_Z99OsJGc'; // clé Google Maps : NE PAS SUPPRIMER
     if ($key !== '') {
       $url = 'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode($key) . '&libraries=places&language=fr&region=FR&callback=cpamCalcInit_v2';
       wp_enqueue_script('cpam2-gmaps', $url, array('cpam2-js'), null, true);
