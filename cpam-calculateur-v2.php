@@ -116,18 +116,20 @@ add_shortcode('cpam_calculateur2', function () {
 .pac-container{z-index:100000 !important}
 
 /* Facture */
-#cpam2-root .bill{position:sticky;top:16px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:0 1px 2px rgba(27,36,48,.04),0 8px 24px rgba(27,36,48,.06)}
-#cpam2-root .bill-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+#cpam2-root .bill{position:sticky;top:16px;overflow:hidden;max-width:100%;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:0 1px 2px rgba(27,36,48,.04),0 8px 24px rgba(27,36,48,.06)}
+#cpam2-root .bill-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
 #cpam2-root .bill-head .total{font-size:28px;font-weight:600;letter-spacing:-.02em}
-#cpam2-root .bill-body{padding:8px 20px 12px;max-height:calc(100vh - 260px);overflow:auto}
+#cpam2-root .bill-body{padding:8px 20px 12px;max-height:calc(100vh - 260px);overflow:auto;overflow-x:hidden}
 #cpam2-root .bill-group{padding:12px 0;border-bottom:1px solid var(--line)}
 #cpam2-root .bill-group:last-child{border-bottom:0}
 #cpam2-root .bill-group h3{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:6px}
-#cpam2-root .line{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:3px 0}
+#cpam2-root .line{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:4px 12px;font-size:14px;padding:3px 0;width:100%;max-width:100%}
+#cpam2-root .line > span{display:block;min-width:0}
+#cpam2-root .line > span:first-child{overflow-wrap:anywhere}
+#cpam2-root .line .amt{text-align:right;white-space:nowrap;justify-self:end}
 #cpam2-root .line.sub{color:var(--muted);padding-left:12px}
 #cpam2-root .line.pat-line{font-weight:600;padding-top:8px;color:var(--ink)}
 #cpam2-root .line.sum{font-weight:600;border-top:1px solid var(--line);margin-top:6px;padding-top:8px;font-size:15px;color:var(--ink)}
-#cpam2-root .line .amt{white-space:nowrap}
 #cpam2-root .line .neg{color:var(--good)}
 #cpam2-root .bill-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
 #cpam2-root .split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
