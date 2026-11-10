@@ -1,118 +1,290 @@
+/**
+ * Calculateur de tarif taxi conventionné (WordPress, extension Code Snippets / functions.php)
+ * Barème : convention-cadre taxis, arrêté du 29/07/2025 (annexe 2), en vigueur au 01/11/2025.
+ * Établissements « Grande ville » : liste validée par la Cnam au 01/04/2026.
+ */
 function taxiapp_calc_script() {
   if (is_page('calcul-tarif-convention-cadre')) { ?>
 <script>
-document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', function () {
+  const root = document.getElementById('taxi-calc');
+  if (!root) return;
+  const $ = (id) => document.getElementById(id);
 
-  const trip = document.getElementById('tripType');
+  /* ================= PARAMÈTRES DU BARÈME ================= */
+  const TARIF = {
+    forfaitPriseEnCharge: 13,   // inclut les 4 premiers km en charge
+    kmInclus: 4,
+    forfaitGrandeVille: 15,
+    majorationNuit: 0.50,       // sur forfait + Grande ville + km
+    majorationAVideMoins50: 0.25,
+    majorationAVide50Plus: 0.50,
+    seuilAVideKm: 50,
+    supplementTPMR: 30,         // jamais abattu
+    supplementDROM: 3,          // ADS en outre-mer, soumis à l'abattement
+    abattementPartage: { 2: 0.23, 3: 0.35, 4: 0.37 }, // 4 patients et plus : 37 %
+    abattementSeulLongueDistance: 0.05,
+    seuilSeulMinKm: 30
+  };
 
-  function toggleSections(){
-    const isHosp = trip.value === 'hospitalisation';
-    document.getElementById('hospitalisationFields').style.display = isHosp ? '' : 'none';
-    document.getElementById('consultationFields').style.display   = isHosp ? 'none' : '';
-    document.getElementById('consultationShare').style.display     = isHosp ? 'none' : '';
+  /* Villes ouvrant droit au forfait Grande ville (prise en charge et/ou dépose) */
+  const GV_VILLES = ['Marseille', 'Paris', 'Nice', 'Toulouse', 'Lyon', 'Strasbourg',
+    'Montpellier', 'Rennes', 'Bordeaux', 'Lille', 'Grenoble', 'Nantes'];
+  const GV_DEPTS = { '92': 'Hauts-de-Seine', '93': 'Seine-Saint-Denis', '94': 'Val-de-Marne' };
+
+  /* Établissements frontaliers validés par la Cnam au 01/04/2026 [dépt, nom, commune, FINESS géo] */
+  const GV_ETABLISSEMENTS = [
+    ['34', 'Clinique St Jean Sud de France', 'St Jean de Vedas', '340024314'],
+    ['34', 'Clinique du Parc', 'Castelnau le Lez', '340780667'],
+    ['34', 'Nephrocare CL Parc Castelnau Newco 1', 'Castelnau le Lez', '340780840'],
+    ['34', 'Aider Sante UAD St Jean sud de France', 'St Jean de Vedas', '340024553'],
+    ['34', 'Aider Sante UAD Grabels Cordier 1', 'Grabels', '340013119'],
+    ['31', 'Clinique Croix du sud et SSR attaché', 'Quint Fonsegrives', '310026927'],
+    ['31', "Clinique de l'Union", 'St Jean', '310780283'],
+    ['31', "SSR attaché à la clinique de l'Union", 'St Jean', '310792635'],
+    ['31', 'CL NEPHRO EXUPERY UDM UNION ST JEAN', 'St Jean', '310026612'],
+    ['31', 'CL NEPHRO EXUPERY UAD UDM QUINT FONSEG', 'Quint Fonsegrives', '310031414'],
+    ['38', 'CHU situé à la Tronche', 'La Tronche', '380000067'],
+    ['38', 'CHU situé à Echirolles', 'Echirolles', '380782722'],
+    ['38', 'AGDUC situé à La Tronche', 'La Tronche', '380784801'],
+    ['44', 'CHU NANTES Site LAENNEC', 'Saint-Herblain', '440017598'],
+    ['44', 'Clinique Santé Atlantique', 'Saint-Herblain', '440033819'],
+    ['44', "Centre d'hémodialyse – Confluent", 'Rezé', '440036499'],
+    ['44', 'Hôpital Privé du Confluent', 'Rezé', '440041580'],
+    ['44', 'CHU NANTES ICO Site Gauducheau', 'St Herblain', '440001113'],
+    ['44', 'Echo-Dialyse', 'St Herblain', '440055770'],
+    ['44', 'CRF Tourmaline', 'St Herblain', '440000255'],
+    ['44', 'GHT Maubreuil', 'St Herblain', '440000024'],
+    ['33', 'Nouvelle Clinique Bordeaux Tondu', 'Floirac', '330781402'],
+    ['33', 'Polyclinique Jean Villar', 'Bruges', '330782582'],
+    ['33', 'Clinique Mutualiste de Pessac', 'Pessac', '330780529'],
+    ['33', 'Polyclinique Bordeaux Rive Droite', 'Lormont', '330780263'],
+    ['33', 'CRF La Tour de Gassies', 'Bruges', '330781139'],
+    ['33', 'Hôpital Suburbain du Bouscat', 'Le Bouscat', '330000332'],
+    ['33', 'Antenne Autodialyse AURAD Le Haillan', 'Le Haillan', '330058058'],
+    ['33', 'Maison de Santé Protestante Bordeaux Bagatelle', 'Talence', '330000340'],
+    ['69', 'Infirmerie Protestante', 'Caluire et Cuire', '690793468'],
+    ['69', 'Hôpital des Charpennes - HCL', 'Villeurbanne', '690784194'],
+    ['69', 'Hôpital Louis Pradel - HCL', 'Bron', '690784186'],
+    ['69', 'Hôpital Pierre Wertheimer - HCL', 'Bron', '690784178'],
+    ['69', 'Médipôle Hôpital Privé', 'Villeurbanne', '690041124'],
+    ['69', 'Médipôle Hôpital Mutualiste', 'Villeurbanne', '690041132'],
+    ['69', 'Hôpital Femme Mère Enfant - HCL', 'Bron', '690007539'],
+    ['69', 'Le Vinatier Psy Univ Lyon Métropole', 'Bron', '690000088'],
+    ['69', "Clinique du Val d'Ouest Vendôme", 'Ecully', '690780358'],
+    ['69', 'Clinique Médico-Chirurgicale Charcot', 'Ste Foy les Lyon', '690780366'],
+    ['59', 'Santélys site CHU Lille', 'Loos', '590060901'],
+    ['59', 'SSR pédiatrique Marc Sautelet', "Villeneuve d'Ascq", '590782611'],
+    ['59', 'Unité de dialyse de Loos', 'Loos', '590031738'],
+    ['59', 'Unité de dialyse de Faches-Thumesnil', 'Faches Thumesnil', '590035200'],
+    ['59', 'Santélys unité de dialyse Lambersart', 'Lambersart', '590035390'],
+    ['59', 'Unité de dialyse de Mons en Baroeul', 'Mons en Baroeul', '590813341'],
+    ['59', 'GCS GHICL Hôpital St Philibert', 'Lomme', '590780284'],
+    ['59', 'Clinique de la Mitterie', 'Lomme', '590806360'],
+    ['67', 'Centre Médico-Chirurgical Obstétrique', 'Schiltigheim', '670780113'],
+    ['67', 'UGECAM Alsace', 'Illkirch', '670781129'],
+    ['67', 'Clinique du Ried', 'Schiltigheim', '670002278'],
+    ['35', 'Clinique privée Sévigné', 'Cesson Sévigné', '350005146'],
+    ['35', 'Centre hospitalier privé', 'St Grégoire', '350000121'],
+    ['35', 'UGECAM pôle gériatrique rennais de Chantepie', 'Chantepie', '350005021'],
+    ['35', 'Centre de dialyse AUB Santé de Montgermont', 'Montgermont', '350046751'],
+    ['06', "Centre d'hémodialyse Institut Arnault Tzanck", 'Saint Laurent du Var', '060791860'],
+    ['06', 'Centre cardio médico-chirurgical Tzanck', 'Saint Laurent du Var', '060794013'],
+    ['06', 'Institut Arnault Tzanck', 'Saint Laurent du Var', '060780491']
+  ];
+
+  /* ================= OUTILS ================= */
+  const round2 = (x) => Math.round((x + Number.EPSILON) * 100) / 100;
+  const eur = (x) => x.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  const nf = (x, d) => x.toFixed(d).replace('.', ',');
+  const num = (id) => { const v = parseFloat(String($(id).value).replace(',', '.')); return isFinite(v) ? v : NaN; };
+  const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[’'`\-–—_.,()]/g, ' ').replace(/\bsaint\b/g, 'st').replace(/\bsainte\b/g, 'ste')
+    .replace(/\s+/g, ' ').trim();
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ================= DÉTECTION GRANDE VILLE ================= */
+  const etabLabel = (e) => `${e[1]} — ${e[2]} (${e[0]})`;
+  const etabIndex = GV_ETABLISSEMENTS.map((e) => ({ e, keys: [norm(etabLabel(e)), norm(e[1]), e[3]] }));
+
+  // Remplit la liste de suggestions
+  (function fillDatalist() {
+    const dl = $('gvPlaces');
+    const opts = [];
+    GV_VILLES.forEach((v) => opts.push(v));
+    Object.keys(GV_DEPTS).forEach((d) => opts.push(`Commune du ${d} (${GV_DEPTS[d]})`));
+    GV_ETABLISSEMENTS.forEach((e) => opts.push(etabLabel(e)));
+    dl.innerHTML = opts.map((o) => `<option value="${esc(o)}"></option>`).join('');
+  })();
+
+  /** Retourne le motif d'éligibilité au forfait Grande ville, ou null. */
+  function gvReason(raw) {
+    const s = norm(raw);
+    if (!s) return null;
+
+    // 1. Établissement frontalier validé (nom, libellé complet ou n° FINESS)
+    const hit = etabIndex.find((x) => x.keys.some((k) => k && (s === k || (s.length >= 8 && k.startsWith(s)))));
+    if (hit) return `établissement validé Cnam : ${hit.e[1]}`;
+
+    // 2. Commune des départements 92 / 93 / 94 (libellé de la liste ou code postal)
+    const m = s.match(/commune du (9[234])\b/) || s.match(/\b(9[234])\d{3}\b/);
+    if (m) return `commune du ${m[1]} (${GV_DEPTS[m[1]]})`;
+
+    // 3. Une des 12 grandes villes (arrondissement et code postal parisien acceptés)
+    if (/\b75\d{3}\b/.test(s)) return 'Paris';
+    for (const v of GV_VILLES) {
+      const k = norm(v);
+      if (s === k || new RegExp('^' + k + ' (\\d|cedex|centre|[0-9]+(e|er|eme))').test(s) ||
+          new RegExp('\\b\\d{5} ' + k + '\\b').test(s)) return v;
+    }
+    return null;
   }
-  trip.addEventListener('change', toggleSections);
+
+  let gvManual = false; // passe à true si l'utilisateur coche/décoche lui-même
+  function updateGV() {
+    const rFrom = gvReason($('placeFrom').value);
+    const rTo = gvReason($('placeTo').value);
+    const reasons = [];
+    if (rFrom) reasons.push('prise en charge : ' + rFrom);
+    if (rTo) reasons.push('dépose : ' + rTo);
+    const badge = $('gvBadge');
+    if (reasons.length) {
+      badge.className = 'badge';
+      badge.textContent = 'Éligible : ' + reasons.join(' / ');
+    } else {
+      badge.className = 'badge off';
+      badge.textContent = ($('placeFrom').value || $('placeTo').value)
+        ? 'Aucun lieu éligible reconnu. Cochez la case à la main si besoin.'
+        : 'Forfait Grande ville non applicable';
+    }
+    if (!gvManual) $('isGrandeVille').checked = reasons.length > 0;
+    return reasons;
+  }
+  ['placeFrom', 'placeTo'].forEach((id) => $(id).addEventListener('input', () => { gvManual = false; updateGV(); }));
+  $('isGrandeVille').addEventListener('change', () => { gvManual = true; });
+
+  /* ================= AFFICHAGE DES SECTIONS ================= */
+  function toggleSections() {
+    $('hospFields').style.display = $('tripType').value === 'hospitalisation' ? '' : 'none';
+    const shared = $('isShared').checked;
+    $('sharedFields').style.display = shared ? '' : 'none';
+    $('aloneFields').style.display = shared && $('isAloneLong').checked ? '' : 'none';
+    const opt = $('dept').selectedOptions[0];
+    $('dromInfo').style.display = opt && opt.dataset.drom ? '' : 'none';
+  }
+  ['tripType', 'isShared', 'isAloneLong', 'dept'].forEach((id) => $(id).addEventListener('change', toggleSections));
+  $('numPatients').addEventListener('change', () => { $('numTollPatients').value = $('numPatients').value; });
   toggleSections();
 
-  function round2(x){ return Math.round((x + Number.EPSILON) * 100) / 100; }
+  /* ================= CALCUL ================= */
+  function calc() {
+    const out = $('result');
+    const errors = [];
 
-  function calc(){
-    const deptEl  = document.getElementById('dept');
-    const deptRate = parseFloat(deptEl.value); // <- LECTURE DIRECTE DU SELECT (fix)
-    const isGV    = document.getElementById('isGrandeVille').checked;
-    const isNight = document.getElementById('isNightOrWeekend').checked;
-    const isTPMR  = document.getElementById('isTPMR').checked;
-    const isDROM  = document.getElementById('isDROM').checked;
+    const km = num('km');
+    if (!(km >= 0)) errors.push('Indiquez une distance en charge valide (0 ou plus).');
+    const tolls = isNaN(num('tolls')) ? 0 : num('tolls');
+    if (tolls < 0) errors.push('Le montant des péages ne peut pas être négatif.');
 
-    const forfait = 13;
-    let total = 0;
+    const deptOpt = $('dept').selectedOptions[0];
+    const deptRate = parseFloat(deptOpt.value);
+    const deptCode = deptOpt.dataset.code;
+    const isDROM = !!deptOpt.dataset.drom;
 
-    if (trip.value === 'hospitalisation') {
-      const km    = parseFloat(document.getElementById('hospitalChargeKm').value) || 0;
-      const mode  = document.getElementById('hospTripType').value; // 'retour_vide' | 'trajet_unique'
-      const share = document.getElementById('isHospShared').checked;
-      const n     = parseInt(document.getElementById('numHospPatients').value) || 1;
-      const tolls = parseFloat(document.getElementById('hospTolls').value) || 0;
+    const isHosp = $('tripType').value === 'hospitalisation';
+    const isAVide = isHosp && $('isAVide').checked;
+    const isGV = $('isGrandeVille').checked;
+    const isNight = $('isNight').checked;
+    const isTPMR = $('isTPMR').checked;
+    const isShared = $('isShared').checked;
+    const n = isShared ? parseInt($('numPatients').value, 10) : 1;
 
-      const kmFact = Math.max(0, km - 4);
-
-      // Tarif au km : majoré seulement en "aller ou retour à vide"
-      let kmRate;
-      if (mode === 'retour_vide') {
-        kmRate = deptRate * (km < 50 ? 1.25 : 1.50);
-        kmRate = Math.ceil(kmRate * 100) / 100; // arrondi au centime supérieur (ex 1.5875 => 1.59)
-      } else {
-        kmRate = deptRate; // trajet unique = même calcul que consultation
-      }
-
-      let socle = forfait + (isGV ? 15 : 0) + (kmFact * kmRate);
-      if (isNight) socle *= 1.5;
-
-      // Partage
-      let abatt = 0;
-      if (share && n >= 2) abatt = (n === 2 ? 0.23 : n === 3 ? 0.35 : 0.37);
-
-      const montant = round2(socle * (1 - abatt));
-
-      // Péages : AUCUNE ristourne. Partage éventuel si plusieurs patients.
-      const tollsPer = share ? round2(tolls / n) : round2(tolls);
-
-      const suppl = (isTPMR ? 30 : 0) + (isDROM ? 3 : 0);
-
-      total = round2(montant + tollsPer + suppl);
-
-      const labelTrip = (mode === 'retour_vide') ? ' (aller ou retour à vide)' : ' (trajet unique)';
-
-      document.getElementById('result').innerHTML = `
-        <strong style="font-size:16px">Total TTC${share ? " par patient " : " "}(Hospitalisation${labelTrip}) : ${total.toFixed(2)} €</strong><br>
-        <div style="margin-top:8px;font-size:13px">
-          Km en charge : ${km.toFixed(1)} — Km facturables : ${kmFact.toFixed(1)}<br>
-          Tarif km ${mode==='retour_vide'?'majoré':'(trajet unique)'} : ${kmRate.toFixed(2)} €/km<br>
-          ${isGV ? "Forfait GV 15 € — " : ""}${isNight ? "Nuit/WE +50 % — " : ""}
-          ${abatt>0?`Partage ${(abatt*100).toFixed(0)} % — `:""}Péages ${share?"par patient ":""}: ${tollsPer.toFixed(2)} €<br>
-          ${isTPMR?"TPMR +30 € — ":""}${isDROM?"DROM +3 € — ":""}
-        </div>`;
-    } else {
-      // CONSULTATION
-      const km     = parseFloat(document.getElementById('kmTotal').value) || 0;
-      const share  = document.getElementById('isShared').checked;
-      const n      = parseInt(document.getElementById('numPatients').value) || 1;
-      const tolls  = parseFloat(document.getElementById('tollsTotal').value) || 0;
-
-      const kmFact = Math.max(0, km - 4);
-
-      let socle = forfait + (isGV ? 15 : 0) + (kmFact * deptRate);
-      if (isNight) socle *= 1.5;
-
-      // Abattement transport partagé – sinon règle dérogatoire patient seul ≥ 30 km : 5 %
-      let abatt = 0;
-      if (share && n >= 2) abatt = (n === 2 ? 0.23 : n === 3 ? 0.35 : 0.37);
-      else if (!share && km >= 30) abatt = 0.05;
-
-      const montant = round2(socle * (1 - abatt));
-
-      // Péages : AUCUNE ristourne ; partagés si besoin
-      const tollsPer = share ? round2(tolls / n) : round2(tolls);
-
-      const suppl = (isTPMR ? 30 : 0) + (isDROM ? 3 : 0);
-
-      total = round2(montant + tollsPer + suppl);
-
-      document.getElementById('result').innerHTML = `
-        <strong style="font-size:16px">Total TTC${share?" par patient ":""}(Consultation) : ${total.toFixed(2)} €</strong><br>
-        <div style="margin-top:8px;font-size:13px">
-          Km : ${km.toFixed(1)} — Km facturables : ${kmFact.toFixed(1)}<br>
-          Tarif km : ${deptRate.toFixed(2)} €/km<br>
-          ${isGV?"Forfait GV 15 € — ":""}${isNight?"Nuit/WE +50 % — ":""}
-          ${abatt>0?`Abattement ${(abatt*100).toFixed(0)} % — `:""}Péages ${share?"par patient ":""}: ${tollsPer.toFixed(2)} €<br>
-          ${isTPMR?"TPMR +30 € — ":""}${isDROM?"DROM +3 € — ":""}
-        </div>`;
+    let nToll = 1;
+    if (isShared) {
+      nToll = parseInt($('numTollPatients').value, 10);
+      if (!(nToll >= 1 && nToll <= n)) errors.push(`Le nombre de patients sur la portion à péage doit être compris entre 1 et ${n}.`);
     }
+
+    // Dérogation « patient seul sur longue distance » (transport partagé uniquement)
+    let aloneLong = false;
+    if (isShared && $('isAloneLong').checked) {
+      const aloneKm = num('aloneKm');
+      const seuil = Math.max(TARIF.seuilSeulMinKm, num('aloneThreshold') || TARIF.seuilSeulMinKm);
+      if (!(aloneKm >= 0)) errors.push('Indiquez la distance parcourue seul dans le véhicule.');
+      else if (aloneKm > km) errors.push('La distance parcourue seul ne peut pas dépasser la distance totale en charge.');
+      else if (aloneKm >= seuil) aloneLong = true;
+      else errors.push(`Abattement à 5 % refusé : le patient doit être seul sur au moins ${seuil} km (saisi : ${aloneKm} km).`);
+    }
+
+    if (errors.length) {
+      out.innerHTML = `<div class="error">${errors.map(esc).join('<br>')}</div>`;
+      return;
+    }
+
+    // --- Tarif kilométrique (majoration hospitalisation avec aller ou retour à vide)
+    let kmRate = deptRate;
+    let majAVide = 0;
+    if (isAVide) {
+      majAVide = km < TARIF.seuilAVideKm ? TARIF.majorationAVideMoins50 : TARIF.majorationAVide50Plus;
+      kmRate = round2(deptRate * (1 + majAVide));
+    }
+    const kmFact = Math.max(0, round2(km - TARIF.kmInclus));
+
+    // --- Tarification socle
+    const lines = [];
+    const forfait = TARIF.forfaitPriseEnCharge;
+    const gv = isGV ? TARIF.forfaitGrandeVille : 0;
+    const kmAmount = round2(kmFact * kmRate);
+    lines.push(['Forfait prise en charge et accompagnement (4 km inclus)', forfait]);
+    if (isGV) lines.push(['Forfait Grande ville', gv]);
+    lines.push([`Kilomètres : ${nf(kmFact, 1)} km × ${nf(kmRate, 2)} €` +
+      (isAVide ? ` (tarif ${deptCode} ${nf(deptRate, 2)} € majoré de ${majAVide * 100} %, aller ou retour à vide)` : ''), kmAmount]);
+
+    let socle = forfait + gv + kmAmount;
+    let night = 0;
+    if (isNight) {
+      night = round2(socle * TARIF.majorationNuit);
+      lines.push(['Majoration nuit / week-end / férié (+50 %)', night]);
+    }
+
+    // --- Supplément DROM (soumis à l'abattement)
+    const drom = isDROM ? TARIF.supplementDROM : 0;
+    if (isDROM) lines.push(['Supplément DROM', drom]);
+
+    // --- Abattement transport partagé (hors péage et TPMR)
+    let abatt = 0;
+    if (isShared) {
+      abatt = aloneLong ? TARIF.abattementSeulLongueDistance
+        : TARIF.abattementPartage[Math.min(n, 4)];
+    }
+    const baseAbattable = round2(socle + night + drom);
+    const abattAmount = round2(baseAbattable * abatt);
+    if (abatt > 0) {
+      lines.push([`Abattement transport partagé −${Math.round(abatt * 100)} %` +
+        (aloneLong ? ' (patient seul sur longue distance)' : ` (${n} patients)`), -abattAmount]);
+    }
+
+    // --- Suppléments non abattus
+    const tpmr = isTPMR ? TARIF.supplementTPMR : 0;
+    if (isTPMR) lines.push(['Supplément TPMR', tpmr]);
+    const tollsPer = round2(tolls / (isShared ? nToll : 1));
+    if (tolls > 0) lines.push([isShared ? `Péages (${eur(tolls)} ÷ ${nToll} patients)` : 'Péages', tollsPer]);
+
+    const total = round2(baseAbattable - abattAmount + tpmr + tollsPer);
+
+    const title = (isHosp ? 'Hospitalisation' : 'Consultation') + (isShared ? ' : montant par patient' : '');
+    out.innerHTML = `
+      <strong style="font-size:16px">${esc(title)}</strong>
+      <table>
+        ${lines.map(([l, v]) => `<tr><td>${esc(l)}</td><td class="amt">${eur(v)}</td></tr>`).join('')}
+        <tr class="total"><td>Total${isShared ? ' par patient' : ''}</td><td class="amt">${eur(total)}</td></tr>
+      </table>
+      ${isShared ? `<p class="hint">Faites une facture par patient, sur la distance qu'il a réellement parcourue.</p>` : ''}`;
   }
 
-  const btn = document.getElementById('calcBtn');
-  if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); calc(); });
-
+  $('calcBtn').addEventListener('click', (e) => { e.preventDefault(); calc(); });
+  root.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); calc(); } });
+  updateGV();
 });
 </script>
 <?php } }
