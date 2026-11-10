@@ -22,7 +22,16 @@
 #regles th,#regles td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 #regles th{font-size:13px;font-weight:600;color:var(--muted);background:var(--ground)}
 #regles td.num,#regles th.num{text-align:right;white-space:nowrap}
-#regles .tablewrap{overflow-x:auto}
+#regles .items{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+#regles .item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+#regles .item .top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:baseline}
+#regles .item .top b{font-size:16px;font-weight:600}
+#regles .item .top .amt{font-size:16px;font-weight:600;white-space:nowrap;text-align:right}
+#regles .item p{margin:6px 0 0;font-size:15px;color:var(--muted)}
+#regles .item .flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#regles .flag{font-size:13px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--ground)}
+#regles .flag.yes{background:var(--warn-soft);border-color:#f3d9a4;color:var(--warn)}
+#regles .flag.no{background:var(--good-soft);border-color:#b7e0c6;color:var(--good)}
 #regles .calc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:12px 0}
 #regles .calc h4{font-size:15px;font-weight:600;margin-bottom:8px}
 #regles .calc .row{display:flex;justify-content:space-between;gap:16px;padding:4px 0;font-size:15px;border-bottom:1px dashed var(--line)}
@@ -55,12 +64,7 @@
 
   <h2 id="r-bareme">Le barème : un seul tarif pour tous les trajets</h2>
   <p>Il n'existe plus de tarif « consultation » ni de tarif « hospitalisation ». Chaque trajet en charge (du lieu de prise en charge du patient au lieu de dépose) se facture avec les mêmes composantes :</p>
-  <div class="tablewrap"><table>
-    <tr><th>Composante</th><th>Montant</th><th>Précision</th></tr>
-    <tr><td>Forfait « prise en charge et accompagnement »</td><td class="num">13,00 €</td><td>Par trajet. Il comprend les 4 premiers kilomètres en charge, l'aide du patient jusqu'au véhicule et l'accompagnement jusqu'au lieu de soins.</td></tr>
-    <tr><td>Forfait « Grande ville »</td><td class="num">+ 15,00 €</td><td>S'ajoute au forfait (28 € en tout) si la prise en charge ou la dépose a lieu dans une commune ou un établissement de la liste (voir plus bas).</td></tr>
-    <tr><td>Tarif kilométrique</td><td class="num">1,27 €/km dans le 06</td><td>Appliqué à partir du 5<sup>e</sup> kilomètre en charge. Le tarif dépend du département de l'ADS du véhicule, pas du lieu du trajet. Il n'est plus lié aux tarifs préfectoraux.</td></tr>
-  </table></div>
+  <div class="items"><div class="item"><div class="top"><b>Forfait « prise en charge et accompagnement »</b><span class="amt">13,00 €</span></div><p>Par trajet. Il comprend les 4 premiers kilomètres en charge, l'aide du patient jusqu'au véhicule et l'accompagnement jusqu'au lieu de soins.</p></div><div class="item"><div class="top"><b>Forfait « Grande ville »</b><span class="amt">+ 15,00 €</span></div><p>S'ajoute au forfait (28 € en tout) si la prise en charge ou la dépose a lieu dans une commune ou un établissement de la liste (voir plus bas).</p></div><div class="item"><div class="top"><b>Tarif kilométrique</b><span class="amt">1,27 €/km dans le 06</span></div><p>Appliqué à partir du 5<sup>e</sup> kilomètre en charge. Le tarif dépend du département de l'ADS du véhicule, pas du lieu du trajet. Il n'est plus lié aux tarifs préfectoraux.</p></div></div>
   <p>Les frais d'approche, l'attente, la marche lente et la remise conventionnelle ont disparu. Rien d'autre que les composantes ci-dessus, les majorations et les suppléments décrits sur cette page ne peut être facturé à l'Assurance Maladie.</p>
   <div class="calc">
     <h4>Exemple : 20 km en charge, de jour, sans particularité (06)</h4>
@@ -106,24 +110,11 @@
   </div>
 
   <h2 id="r-supplements">Suppléments</h2>
-  <div class="tablewrap"><table>
-    <tr><th>Supplément</th><th>Montant</th><th>Conditions</th><th>Majoré ?</th><th>Abattu en partagé ?</th></tr>
-    <tr><td>TPMR</td><td class="num">30,00 €</td><td>Par trajet d'un patient transporté dans son fauteuil roulant, avec un véhicule spécialement équipé et déclaré à la caisse (annexe 3 de la convention).</td><td>Non</td><td>Non</td></tr>
-    <tr><td>Péages</td><td class="num">frais réels</td><td>Autoroute ou route urbaine payante, sur justificatif, si elle améliore le service rendu. En transport partagé, le montant est divisé par le nombre de patients qui ont emprunté le péage.</td><td>Non</td><td>Non</td></tr>
-    <tr><td>Courte distance</td><td class="num">2,00 €</td><td>Trajet strictement inférieur à 10 km, effectué à partir du 1<sup>er</sup> août 2026. Jamais avec le forfait Grande ville. Supplément local validé par la Cnam, repris dans les Alpes-Maritimes.</td><td>Non</td><td>Oui</td></tr>
-    <tr><td>DROM</td><td class="num">3,00 €</td><td>Par trajet, pour une ADS située en Guadeloupe, Martinique, Guyane, à La Réunion ou à Mayotte.</td><td>Non</td><td>Oui</td></tr>
-    <tr><td>Supplément local de carence</td><td class="num">selon convention</td><td>Uniquement s'il est inscrit dans la convention locale après validation de la Cnam. Aucun dans les Alpes-Maritimes à ce jour.</td><td>Non</td><td>Oui</td></tr>
-  </table></div>
+  <div class="items"><div class="item"><div class="top"><b>TPMR</b><span class="amt">30,00 €</span></div><p>Par trajet d'un patient transporté dans son fauteuil roulant, avec un véhicule spécialement équipé et déclaré à la caisse (annexe 3 de la convention).</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag no">Jamais abattu</span></div></div><div class="item"><div class="top"><b>Péages</b><span class="amt">frais réels</span></div><p>Autoroute ou route urbaine payante, sur justificatif, si elle améliore le service rendu. En transport partagé, le montant est divisé par le nombre de patients qui ont emprunté le péage.</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag no">Jamais abattu</span></div></div><div class="item"><div class="top"><b>Courte distance</b><span class="amt">2,00 €</span></div><p>Trajet strictement inférieur à 10 km, effectué à partir du 1<sup>er</sup> août 2026. Jamais avec le forfait Grande ville. Supplément local validé par la Cnam, repris dans les Alpes-Maritimes.</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag yes">Abattu en transport partagé</span></div></div><div class="item"><div class="top"><b>DROM</b><span class="amt">3,00 €</span></div><p>Par trajet, pour une ADS située en Guadeloupe, Martinique, Guyane, à La Réunion ou à Mayotte.</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag yes">Abattu en transport partagé</span></div></div><div class="item"><div class="top"><b>Supplément local de carence</b><span class="amt">selon convention</span></div><p>Uniquement s'il est inscrit dans la convention locale après validation de la Cnam. Aucun dans les Alpes-Maritimes à ce jour.</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag yes">Abattu en transport partagé</span></div></div></div>
 
   <h2 id="r-partage">Transport partagé</h2>
   <p>Le transport partagé est le mode de référence : il doit être proposé à chaque patient éligible, et un refus doit être mentionné sur la facture (le patient perd alors le tiers payant et avance les frais). Jusqu'à 8 patients peuvent voyager ensemble. Une facture est établie <strong>pour chaque patient</strong>, sur la distance qu'il a réellement parcourue, avec un abattement qui dépend du nombre de patients présents dans le véhicule :</p>
-  <div class="tablewrap"><table>
-    <tr><th>Patients dans le véhicule</th><th class="num">Abattement</th></tr>
-    <tr><td>2</td><td class="num">23 %</td></tr>
-    <tr><td>3</td><td class="num">35 %</td></tr>
-    <tr><td>4 à 8</td><td class="num">37 %</td></tr>
-    <tr><td>Patient resté seul dans le véhicule sur au moins 30 km (seuil local, 30 km dans le 06)</td><td class="num">5 % pour ce patient</td></tr>
-  </table></div>
+  <div class="items"><div class="item"><div class="top"><b>2 patients dans le véhicule</b><span class="amt">− 23 %</span></div><p>Sur la facture de chacun des deux patients.</p></div><div class="item"><div class="top"><b>3 patients</b><span class="amt">− 35 %</span></div><p>Sur la facture de chacun des trois patients.</p></div><div class="item"><div class="top"><b>4 à 8 patients</b><span class="amt">− 37 %</span></div><p>Sur la facture de chaque patient.</p></div><div class="item"><div class="top"><b>Patient resté seul sur au moins 30 km</b><span class="amt">− 5 % pour lui seul</span></div><p>Seuil fixé par la convention locale, 30 km au minimum (30 km dans le 06). Les autres patients gardent leur taux.</p></div></div>
   <p>L'abattement porte sur le forfait, le forfait Grande ville, les kilomètres, la majoration de nuit ou de dimanche et les suppléments forfaitaires. Il ne porte ni sur les péages ni sur le TPMR.</p>
   <div class="calc">
     <h4>Exemple D : 2 patients, patient 1 sur 18 km, patient 2 sur 11 km, de jour (06)</h4>
