@@ -25,8 +25,10 @@ add_shortcode('cpam_calculateur2', function () {
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   font-size:16px; line-height:1.5; color:var(--ink); background:var(--ground);
   -webkit-text-size-adjust:100%; font-variant-numeric:tabular-nums;
+  container-type:inline-size; container-name:cpam2; width:100%; max-width:100%;
 }
-#cpam2-root *{box-sizing:border-box}
+#cpam2-root *{box-sizing:border-box;min-width:0}
+#cpam2-root .hint,#cpam2-root .check,#cpam2-root .line span:first-child{overflow-wrap:anywhere}
 #cpam2-root .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 96px}
 #cpam2-root h1,#cpam2-root h2,#cpam2-root h3{margin:0;line-height:1.25;letter-spacing:-.01em}
 #cpam2-root h1{font-size:26px;font-weight:600}
@@ -42,15 +44,14 @@ add_shortcode('cpam_calculateur2', function () {
 #cpam2-root .head .dept{display:flex;flex-direction:column;gap:6px;min-width:260px}
 
 /* Deux colonnes */
-#cpam2-root .cols{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:32px;align-items:start;margin-top:24px}
-@media (max-width:980px){#cpam2-root .cols{grid-template-columns:1fr}}
+#cpam2-root .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);gap:32px;align-items:start;margin-top:24px}
 
 /* Sections du formulaire */
 #cpam2-root .sec{display:grid;grid-template-columns:180px minmax(0,1fr);gap:16px 28px;padding:24px 0;border-bottom:1px solid var(--line)}
 #cpam2-root .sec:first-child{padding-top:8px}
 #cpam2-root .sec > .lead h2{margin-bottom:4px}
 #cpam2-root .sec > .lead p{font-size:14px;color:var(--muted)}
-@media (max-width:700px){#cpam2-root .sec{grid-template-columns:1fr;gap:12px}}
+
 
 #cpam2-root .row{display:grid;gap:14px 16px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
 #cpam2-root .row.two{grid-template-columns:1fr 1fr}
@@ -139,15 +140,25 @@ add_shortcode('cpam_calculateur2', function () {
 #cpam2-root .rules ul{margin:6px 0 0;padding-left:18px}
 #cpam2-root .foot{margin-top:28px;font-size:13px;color:var(--muted);line-height:1.5}
 
-/* Barre basse sur mobile */
+/* Une seule colonne quand le conteneur (zone de contenu du thème) est étroit */
 #cpam2-root .bar{display:none}
-@media (max-width:980px){
+@container cpam2 (max-width: 980px){
+  #cpam2-root .cols{grid-template-columns:1fr}
   #cpam2-root .bill{position:static}
   #cpam2-root .bill-body{max-height:none}
   #cpam2-root .bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));align-items:center;justify-content:space-between;gap:12px}
   #cpam2-root .bar b{font-size:20px}
   #cpam2-root .wrap{padding-left:16px;padding-right:16px}
+}
+@container cpam2 (max-width: 700px){
+  #cpam2-root .sec{grid-template-columns:1fr;gap:12px}
   #cpam2-root .row.two{grid-template-columns:1fr}
+  #cpam2-root .head .dept{min-width:0;width:100%}
+}
+/* Navigateurs sans container queries : repli sur la largeur de la fenêtre */
+@supports not (container-type: inline-size){
+  @media (max-width:1100px){#cpam2-root .cols{grid-template-columns:1fr}#cpam2-root .bill{position:static}#cpam2-root .bill-body{max-height:none}}
+  @media (max-width:700px){#cpam2-root .sec{grid-template-columns:1fr}#cpam2-root .row.two{grid-template-columns:1fr}}
 }
 @media (prefers-reduced-motion:reduce){#cpam2-root *{transition:none !important}}
 CSS;
