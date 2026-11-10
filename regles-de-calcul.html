@@ -1,0 +1,168 @@
+<!-- Page « Règles de calcul » : à coller dans un bloc HTML personnalisé de WordPress (remplace l'ancien bloc). -->
+<style>
+#regles{--ink:#1b2430;--muted:#5b6675;--line:#dde3ea;--ground:#f4f6f8;--surface:#fff;--accent:#0b5fb0;--accent-soft:#e9f1fb;--good:#1a7f4b;--good-soft:#e6f4ec;--warn:#9a5b00;--warn-soft:#fff4e0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.55;color:var(--ink);background:var(--ground);max-width:900px;margin:0 auto;padding:28px 24px 24px;border-radius:12px;font-variant-numeric:tabular-nums}
+#regles p,#regles li,#regles td,#regles th,#regles summary,#regles .lead{color:inherit}
+#regles .muted,#regles .lead,#regles th,#regles .foot{color:var(--muted)}
+#regles *{box-sizing:border-box;min-width:0}
+#regles h1,#regles h2,#regles h3,#regles h4{margin:0;line-height:1.25;letter-spacing:-.01em;color:var(--ink)}
+#regles h1{font-size:28px;font-weight:600}
+#regles h2{font-size:20px;font-weight:600;padding-top:28px;margin-top:20px;border-top:1px solid var(--line)}
+#regles h3{font-size:16px;font-weight:600;margin-top:18px}
+#regles p,#regles ul,#regles ol{margin:10px 0}
+#regles ul,#regles ol{padding-left:22px}
+#regles li{margin:4px 0}
+#regles .lead{color:var(--muted);margin-top:6px}
+#regles .muted{color:var(--muted)}
+#regles .small{font-size:14px}
+#regles .toc{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px}
+#regles .toc a{font-size:14px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--accent);text-decoration:none;background:var(--surface)}
+#regles .toc a:hover{background:var(--accent-soft)}
+#regles table{width:100%;border-collapse:collapse;margin:12px 0;font-size:15px;background:var(--surface)}
+#regles th,#regles td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+#regles th{font-size:13px;font-weight:600;color:var(--muted);background:var(--ground)}
+#regles td.num,#regles th.num{text-align:right;white-space:nowrap}
+#regles .items{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+#regles .item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+#regles .item .top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:baseline}
+#regles .item .top b{font-size:16px;font-weight:600}
+#regles .item .top .amt{font-size:16px;font-weight:600;white-space:nowrap;text-align:right}
+#regles .item p{margin:6px 0 0;font-size:15px;color:var(--muted)}
+#regles .item .flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#regles .flag{font-size:13px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--ground)}
+#regles .flag.yes{background:var(--warn-soft);border-color:#f3d9a4;color:var(--warn)}
+#regles .flag.no{background:var(--good-soft);border-color:#b7e0c6;color:var(--good)}
+#regles .calc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:12px 0}
+#regles .calc h4{font-size:15px;font-weight:600;margin-bottom:8px}
+#regles .calc .row{display:flex;justify-content:space-between;gap:16px;padding:4px 0;font-size:15px;border-bottom:1px dashed var(--line)}
+#regles .calc .row:last-child{border-bottom:0}
+#regles .calc .row.total{font-weight:600;border-top:1px solid var(--line);margin-top:4px;padding-top:8px}
+#regles .calc .amt{white-space:nowrap}
+#regles .note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:15px}
+#regles .note.warn{border-color:var(--warn);background:var(--warn-soft)}
+#regles .note.good{border-color:var(--good);background:var(--good-soft)}
+#regles .cities{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+#regles .cities span{font-size:14px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+#regles details{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:8px 0;padding:0 16px}
+#regles summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:15px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+#regles summary::-webkit-details-marker{display:none}
+#regles summary::after{content:"+";color:var(--muted);font-weight:400}
+#regles details[open] summary::after{content:"–"}
+#regles details > :not(summary){margin-top:0}
+#regles details p:last-child{padding-bottom:12px}
+#regles .foot{font-size:13px;color:var(--muted);margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
+#regles a{color:var(--accent)}
+@media (max-width:600px){#regles{font-size:15px;padding:20px 14px;border-radius:0}#regles h1{font-size:24px}#regles .calc .row{flex-direction:column;gap:0}}
+</style>
+
+<div id="regles">
+  <h1>Règles de calcul du transport en taxi conventionné</h1>
+  <p class="lead">Convention-cadre nationale 2025-2029, tarifs applicables aux trajets effectués depuis le 1<sup>er</sup> novembre 2025. Cette page reprend les règles du texte officiel et du cahier des charges de facturation de la Cnam, avec des exemples chiffrés pour les Alpes-Maritimes.</p>
+  <nav class="toc" aria-label="Sommaire">
+    <a href="#r-bareme">Barème</a><a href="#r-vide">Aller ou retour à vide</a><a href="#r-majoration">Nuit, dimanche, férié</a><a href="#r-supplements">Suppléments</a><a href="#r-partage">Transport partagé</a><a href="#r-arrondis">Ordre de calcul et arrondis</a><a href="#r-grandeville">Grande ville</a><a href="#r-06">Alpes-Maritimes</a><a href="#r-faq">Questions fréquentes</a>
+  </nav>
+
+  <h2 id="r-bareme">Le barème : un seul tarif pour tous les trajets</h2>
+  <p>Il n'existe plus de tarif « consultation » ni de tarif « hospitalisation ». Chaque trajet en charge (du lieu de prise en charge du patient au lieu de dépose) se facture avec les mêmes composantes :</p>
+  <div class="items"><div class="item"><div class="top"><b>Forfait « prise en charge et accompagnement »</b><span class="amt">13,00 €</span></div><p>Par trajet. Il comprend les 4 premiers kilomètres en charge, l'aide du patient jusqu'au véhicule et l'accompagnement jusqu'au lieu de soins.</p></div><div class="item"><div class="top"><b>Forfait « Grande ville »</b><span class="amt">+ 15,00 €</span></div><p>S'ajoute au forfait (28 € en tout) si la prise en charge ou la dépose a lieu dans une commune ou un établissement de la liste (voir plus bas).</p></div><div class="item"><div class="top"><b>Tarif kilométrique</b><span class="amt">1,27 €/km dans le 06</span></div><p>Appliqué à partir du 5<sup>e</sup> kilomètre en charge. Le tarif dépend du département de l'ADS du véhicule, pas du lieu du trajet. Il n'est plus lié aux tarifs préfectoraux.</p></div></div>
+  <p>Les frais d'approche, l'attente, la marche lente et la remise conventionnelle ont disparu. Rien d'autre que les composantes ci-dessus, les majorations et les suppléments décrits sur cette page ne peut être facturé à l'Assurance Maladie.</p>
+  <div class="calc">
+    <h4>Exemple : 20 km en charge, de jour, sans particularité (06)</h4>
+    <div class="row"><span>Forfait prise en charge et accompagnement (4 km inclus)</span><span class="amt">13,00 €</span></div>
+    <div class="row"><span>16 km facturés × 1,27 €</span><span class="amt">20,32 €</span></div>
+    <div class="row total"><span>Total du trajet</span><span class="amt">33,32 €</span></div>
+  </div>
+
+  <h2 id="r-vide">Hospitalisation avec aller ou retour à vide</h2>
+  <p>C'est la seule situation qui majore le tarif kilométrique. Deux conditions doivent être réunies :</p>
+  <ol>
+    <li><strong>Le motif</strong> : une entrée ou une sortie d'hospitalisation, complète, partielle ou ambulatoire, y compris une séance de chimiothérapie, de radiothérapie ou d'hémodialyse. Un transport vers une consultation, un examen ou un cabinet n'ouvre pas droit à la majoration, même avec un retour à vide.</li>
+    <li><strong>Le trajet à vide</strong> : le taxi est venu à vide de sa station jusqu'à l'établissement pour y prendre le patient (aller à vide), ou il est reparti à vide de l'établissement où il a déposé le patient jusqu'à sa station (retour à vide). Si le taxi attend le patient, enchaîne une autre course ou se déplace pour convenance personnelle, il n'y a pas de trajet à vide.</li>
+  </ol>
+  <p>Seul le trajet en charge est facturé. Son tarif kilométrique est majoré de <strong>25 %</strong> si la distance en charge est inférieure à 50 km, de <strong>50 %</strong> à partir de 50 km. Les forfaits ne sont pas majorés par cette règle.</p>
+  <div class="note">Le tarif majoré est arrondi au centime <em>avant</em> d'être multiplié par les kilomètres. Dans le 06 : 1,27 × 1,25 = 1,5875, soit <strong>1,59 €/km</strong> ; 1,27 × 1,50 = 1,905, soit <strong>1,91 €/km</strong>.</div>
+  <div class="calc">
+    <h4>Exemple A : admission, 20 km en charge, retour à vide (06)</h4>
+    <div class="row"><span>Forfait prise en charge et accompagnement</span><span class="amt">13,00 €</span></div>
+    <div class="row"><span>16 km facturés × 1,59 € (1,27 € majoré de 25 %)</span><span class="amt">25,44 €</span></div>
+    <div class="row total"><span>Total du trajet</span><span class="amt">38,44 €</span></div>
+  </div>
+  <div class="calc">
+    <h4>Exemple B : sortie, 65 km en charge, aller à vide (06)</h4>
+    <div class="row"><span>Forfait prise en charge et accompagnement</span><span class="amt">13,00 €</span></div>
+    <div class="row"><span>61 km facturés × 1,91 € (1,27 € majoré de 50 %)</span><span class="amt">116,51 €</span></div>
+    <div class="row total"><span>Total du trajet</span><span class="amt">129,51 €</span></div>
+  </div>
+  <p class="small muted">Justificatif : le bulletin de situation ou d'hospitalisation remis par l'établissement, à conserver avec la prescription. Certaines caisses acceptent la seule prescription cochée « hospitalisation » (c'est le cas en Dordogne), d'autres exigent le bulletin dans tous les cas (Rhône). Renseignez-vous auprès de votre CPAM.</p>
+
+  <h2 id="r-majoration">Majoration de nuit, de dimanche et de jour férié</h2>
+  <p>Une majoration de <strong>50 %</strong> s'applique au forfait, au forfait Grande ville et aux kilomètres (après l'éventuelle majoration à vide) lorsque le trajet a lieu :</p>
+  <ul>
+    <li><strong>de nuit</strong> : plus de la moitié du temps en charge se situe entre 20 h et 8 h ;</li>
+    <li><strong>le week-end ou un jour férié</strong> : prise en charge le samedi à partir de 12 h, le dimanche ou un jour férié (les jours fériés sont ceux du département de l'ADS).</li>
+  </ul>
+  <p>Les deux majorations ne se cumulent pas. Un trajet du samedi soir dont plus de la moitié se déroule après 20 h est un trajet de nuit, pas un trajet de week-end ; le résultat est le même (50 %). La majoration ne s'applique ni aux péages, ni au supplément TPMR, ni aux suppléments forfaitaires (DROM, courte distance, supplément local).</p>
+  <div class="calc">
+    <h4>Exemple C : 20 km en charge, un dimanche, sans trajet à vide (06)</h4>
+    <div class="row"><span>Forfait 13,00 € majoré de 50 %</span><span class="amt">19,50 €</span></div>
+    <div class="row"><span>16 km × 1,91 € (1,27 € majoré de 50 % = 0,64 € de plus par km)</span><span class="amt">30,56 €</span></div>
+    <div class="row total"><span>Total du trajet</span><span class="amt">50,06 €</span></div>
+  </div>
+
+  <h2 id="r-supplements">Suppléments</h2>
+  <div class="items"><div class="item"><div class="top"><b>TPMR</b><span class="amt">30,00 €</span></div><p>Par trajet d'un patient transporté dans son fauteuil roulant, avec un véhicule spécialement équipé et déclaré à la caisse (annexe 3 de la convention).</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag no">Jamais abattu</span></div></div><div class="item"><div class="top"><b>Péages</b><span class="amt">frais réels</span></div><p>Autoroute ou route urbaine payante, sur justificatif, si elle améliore le service rendu. En transport partagé, le montant est divisé par le nombre de patients qui ont emprunté le péage.</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag no">Jamais abattu</span></div></div><div class="item"><div class="top"><b>Courte distance</b><span class="amt">2,00 €</span></div><p>Trajet strictement inférieur à 10 km, effectué à partir du 1<sup>er</sup> août 2026. Jamais avec le forfait Grande ville. Supplément local validé par la Cnam, repris dans les Alpes-Maritimes.</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag yes">Abattu en transport partagé</span></div></div><div class="item"><div class="top"><b>DROM</b><span class="amt">3,00 €</span></div><p>Par trajet, pour une ADS située en Guadeloupe, Martinique, Guyane, à La Réunion ou à Mayotte.</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag yes">Abattu en transport partagé</span></div></div><div class="item"><div class="top"><b>Supplément local de carence</b><span class="amt">selon convention</span></div><p>Uniquement s'il est inscrit dans la convention locale après validation de la Cnam. Aucun dans les Alpes-Maritimes à ce jour.</p><div class="flags"><span class="flag no">Jamais majoré</span><span class="flag yes">Abattu en transport partagé</span></div></div></div>
+
+  <h2 id="r-partage">Transport partagé</h2>
+  <p>Le transport partagé est le mode de référence : il doit être proposé à chaque patient éligible, et un refus doit être mentionné sur la facture (le patient perd alors le tiers payant et avance les frais). Jusqu'à 8 patients peuvent voyager ensemble. Une facture est établie <strong>pour chaque patient</strong>, sur la distance qu'il a réellement parcourue, avec un abattement qui dépend du nombre de patients présents dans le véhicule :</p>
+  <div class="items"><div class="item"><div class="top"><b>2 patients dans le véhicule</b><span class="amt">− 23 %</span></div><p>Sur la facture de chacun des deux patients.</p></div><div class="item"><div class="top"><b>3 patients</b><span class="amt">− 35 %</span></div><p>Sur la facture de chacun des trois patients.</p></div><div class="item"><div class="top"><b>4 à 8 patients</b><span class="amt">− 37 %</span></div><p>Sur la facture de chaque patient.</p></div><div class="item"><div class="top"><b>Patient resté seul sur au moins 30 km</b><span class="amt">− 5 % pour lui seul</span></div><p>Seuil fixé par la convention locale, 30 km au minimum (30 km dans le 06). Les autres patients gardent leur taux.</p></div></div>
+  <p>L'abattement porte sur le forfait, le forfait Grande ville, les kilomètres, la majoration de nuit ou de dimanche et les suppléments forfaitaires. Il ne porte ni sur les péages ni sur le TPMR.</p>
+  <div class="calc">
+    <h4>Exemple D : 2 patients, patient 1 sur 18 km, patient 2 sur 11 km, de jour (06)</h4>
+    <div class="row"><span>Patient 1 : (13,00 + 14 km × 1,27 = 17,78) = 30,78 € − 23 %</span><span class="amt">23,70 €</span></div>
+    <div class="row"><span>Patient 2 : (13,00 + 7 km × 1,27 = 8,89) = 21,89 € − 23 %</span><span class="amt">16,86 €</span></div>
+    <div class="row total"><span>Deux factures, total encaissé</span><span class="amt">40,56 €</span></div>
+  </div>
+
+  <h2 id="r-arrondis">Ordre de calcul et arrondis</h2>
+  <p>Le cahier des charges de facturation de la Cnam impose l'ordre suivant, avec un arrondi au centime (0,005 vers le haut) à chaque étape. C'est cet ordre qu'appliquent les logiciels certifiés et le calculateur de ce site.</p>
+  <ol>
+    <li>Forfait : 13 € ou 28 € avec Grande ville.</li>
+    <li>Tarif kilométrique : tarif du département, majoré de 25 % ou 50 % en cas de trajet à vide, arrondi au centime.</li>
+    <li>Montant kilométrique : tarif × (distance − 4 km), arrondi.</li>
+    <li>Majoration de nuit ou de dimanche : forfait × 50 %, arrondi ; (tarif km × 50 %, arrondi) × km facturés, arrondi.</li>
+    <li>Suppléments forfaitaires : DROM, courte distance, supplément local.</li>
+    <li>Abattement transport partagé : appliqué séparément au forfait, aux kilomètres et aux suppléments forfaitaires (majoration comprise), chaque résultat arrondi.</li>
+    <li>Péages et TPMR : ajoutés tels quels.</li>
+    <li>Part Assurance Maladie : calculée poste par poste au taux du patient (55 % ou 100 %), arrondie à chaque poste. La franchise médicale de 4 € par trajet (8 € par jour et par transporteur, 50 € par an) est déduite au patient par la caisse, sauf exonération.</li>
+  </ol>
+  <div class="note warn">Multiplier d'abord puis arrondir à la fin donne des écarts de quelques centimes qui se traduisent par des rejets de facture. Dans l'exemple A, 16 × 1,5875 donnerait 25,40 € alors que le montant attendu est 25,44 €.</div>
+
+  <h2 id="r-grandeville">Forfait Grande ville</h2>
+  <p>Le forfait de 15 € s'ajoute si la prise en charge <strong>ou</strong> la dépose a lieu :</p>
+  <div class="cities"><span>Marseille</span><span>Paris</span><span>Nice</span><span>Toulouse</span><span>Lyon</span><span>Strasbourg</span><span>Montpellier</span><span>Rennes</span><span>Bordeaux</span><span>Lille</span><span>Grenoble</span><span>Nantes</span></div>
+  <ul>
+    <li>dans l'une de ces 12 communes (la commune elle-même, pas son agglomération) ;</li>
+    <li>dans toute commune des Hauts-de-Seine (92), de la Seine-Saint-Denis (93) ou du Val-de-Marne (94) ;</li>
+    <li>dans un établissement situé en périphérie de ces villes et inscrit sur la liste validée par la Cnam (version du 1<sup>er</sup> avril 2026). Dans les Alpes-Maritimes : l'<strong>Institut Arnault Tzanck</strong>, son centre d'hémodialyse et le centre cardio médico-chirurgical Tzanck, à Saint-Laurent-du-Var (FINESS 060780491, 060791860, 060794013).</li>
+  </ul>
+  <p class="small muted">Sur la facture, le numéro FINESS de l'établissement se porte après le code INSEE de la commune. Une adresse à Saint-Laurent-du-Var hors de ces établissements n'ouvre pas droit au forfait.</p>
+
+  <h2 id="r-06">Dispositions propres aux Alpes-Maritimes</h2>
+  <ul>
+    <li>Tarif kilométrique : <strong>1,27 €/km</strong> (le plus élevé de France métropolitaine avec la Corse et la Nièvre).</li>
+    <li>Seuil « patient seul » en transport partagé : 30 km.</li>
+    <li>Supplément courte distance de 2 € applicable aux trajets de moins de 10 km depuis le 1<sup>er</sup> août 2026.</li>
+    <li>Pas de supplément local de carence.</li>
+    <li>Densité maximale de taxis conventionnés fixée par la CPAM : 57 pour 100 000 habitants.</li>
+  </ul>
+
+  <h2 id="r-faq">Questions fréquentes</h2>
+  <details><summary>Le trajet à vide est-il possible si l'hôpital est dans la commune de mon ADS ?</summary><p>La convention nationale ne l'exclut pas : il faut un déplacement réel et direct entre la station et l'établissement. Certaines caisses l'ont précisé localement : dans le Rhône, la majoration est refusée lorsque l'établissement se trouve dans la même zone que l'ADS. La CPAM des Alpes-Maritimes n'a pas publié de règle de ce type ; en cas de doute, demandez-lui une réponse écrite.</p></details>
+  <details><summary>Quelle distance saisir ?</summary><p>La distance réellement parcourue en charge, du lieu de prise en charge au lieu de dépose, par le trajet le moins onéreux qui garantit la qualité du service. Les caisses vérifient avec un distancier (ViaMichelin ou Google Maps selon les départements) et tolèrent de petits écarts, pas des détours systématiques.</p></details>
+  <details><summary>Un aller-retour, c'est une ou deux factures ?</summary><p>Deux trajets, chacun avec son forfait, ses kilomètres et sa propre majoration éventuelle. Ils peuvent figurer sur la même facture Cnam 606b (deux trajets au maximum sur le formulaire principal, l'annexe au-delà).</p></details>
+  <details><summary>Que se passe-t-il si le patient refuse le transport partagé ?</summary><p>Le refus est noté sur la facture, qui est établie hors tiers payant : le patient règle le trajet et se fait rembourser. Le taxi facture alors comme pour un patient seul, sans abattement.</p></details>
+  <details><summary>Faut-il une prescription et un accord préalable ?</summary><p>La prescription médicale de transport doit exister avant le trajet (sauf urgence) et indiquer le mode de transport. L'accord préalable est nécessaire pour les trajets de plus de 150 km, les transports en série et certains cas particuliers ; l'absence de réponse sous 15 jours vaut accord. Les patients en ALD avec incapacité, en accident du travail, en maternité à partir du 6<sup>e</sup> mois ou en invalidité sont pris en charge à 100 %, les autres à 55 %.</p></details>
+  <details><summary>Quand la facturation électronique devient-elle obligatoire ?</summary><p>Depuis le 31 mai 2026, seule la télétransmission en norme B2 avec un logiciel certifié par le CNDA est acceptée. Un dispositif de géolocalisation certifié alimentant la facture est prévu d'ici le 1<sup>er</sup> janvier 2027.</p></details>
+
+  <p class="foot">Sources : arrêté du 29 juillet 2025 portant approbation de la convention-cadre nationale (Journal officiel du 8 août 2025) ; cahier des charges Cnam de facturation B2 des taxis, version 2.1 du 23 septembre 2025 ; liste Cnam des établissements ouvrant droit au forfait Grande ville au 1<sup>er</sup> avril 2026 ; conventions locales publiées sur ameli.fr. Page mise à jour le 10 novembre 2026. Les montants sont donnés à titre indicatif : la facture validée par la CPAM fait foi.</p>
+</div>

@@ -25,8 +25,10 @@ add_shortcode('cpam_calculateur2', function () {
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   font-size:16px; line-height:1.5; color:var(--ink); background:var(--ground);
   -webkit-text-size-adjust:100%; font-variant-numeric:tabular-nums;
+  container-type:inline-size; container-name:cpam2; width:100%; max-width:100%;
 }
-#cpam2-root *{box-sizing:border-box}
+#cpam2-root *{box-sizing:border-box;min-width:0}
+#cpam2-root .hint,#cpam2-root .check,#cpam2-root .line span:first-child{overflow-wrap:anywhere}
 #cpam2-root .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 96px}
 #cpam2-root h1,#cpam2-root h2,#cpam2-root h3{margin:0;line-height:1.25;letter-spacing:-.01em}
 #cpam2-root h1{font-size:26px;font-weight:600}
@@ -42,15 +44,14 @@ add_shortcode('cpam_calculateur2', function () {
 #cpam2-root .head .dept{display:flex;flex-direction:column;gap:6px;min-width:260px}
 
 /* Deux colonnes */
-#cpam2-root .cols{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:32px;align-items:start;margin-top:24px}
-@media (max-width:980px){#cpam2-root .cols{grid-template-columns:1fr}}
+#cpam2-root .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);gap:32px;align-items:start;margin-top:24px}
 
 /* Sections du formulaire */
 #cpam2-root .sec{display:grid;grid-template-columns:180px minmax(0,1fr);gap:16px 28px;padding:24px 0;border-bottom:1px solid var(--line)}
 #cpam2-root .sec:first-child{padding-top:8px}
 #cpam2-root .sec > .lead h2{margin-bottom:4px}
 #cpam2-root .sec > .lead p{font-size:14px;color:var(--muted)}
-@media (max-width:700px){#cpam2-root .sec{grid-template-columns:1fr;gap:12px}}
+
 
 #cpam2-root .row{display:grid;gap:14px 16px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
 #cpam2-root .row.two{grid-template-columns:1fr 1fr}
@@ -115,18 +116,20 @@ add_shortcode('cpam_calculateur2', function () {
 .pac-container{z-index:100000 !important}
 
 /* Facture */
-#cpam2-root .bill{position:sticky;top:16px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:0 1px 2px rgba(27,36,48,.04),0 8px 24px rgba(27,36,48,.06)}
-#cpam2-root .bill-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+#cpam2-root .bill{position:sticky;top:16px;overflow:hidden;max-width:100%;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:0 1px 2px rgba(27,36,48,.04),0 8px 24px rgba(27,36,48,.06)}
+#cpam2-root .bill-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
 #cpam2-root .bill-head .total{font-size:28px;font-weight:600;letter-spacing:-.02em}
-#cpam2-root .bill-body{padding:8px 20px 12px;max-height:calc(100vh - 260px);overflow:auto}
+#cpam2-root .bill-body{padding:8px 20px 12px;max-height:calc(100vh - 260px);overflow:auto;overflow-x:hidden}
 #cpam2-root .bill-group{padding:12px 0;border-bottom:1px solid var(--line)}
 #cpam2-root .bill-group:last-child{border-bottom:0}
 #cpam2-root .bill-group h3{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:6px}
-#cpam2-root .line{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:3px 0}
+#cpam2-root .line{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:4px 12px;font-size:14px;padding:3px 0;width:100%;max-width:100%}
+#cpam2-root .line > span{display:block;min-width:0}
+#cpam2-root .line > span:first-child{overflow-wrap:anywhere}
+#cpam2-root .line .amt{text-align:right;white-space:nowrap;justify-self:end}
 #cpam2-root .line.sub{color:var(--muted);padding-left:12px}
 #cpam2-root .line.pat-line{font-weight:600;padding-top:8px;color:var(--ink)}
 #cpam2-root .line.sum{font-weight:600;border-top:1px solid var(--line);margin-top:6px;padding-top:8px;font-size:15px;color:var(--ink)}
-#cpam2-root .line .amt{white-space:nowrap}
 #cpam2-root .line .neg{color:var(--good)}
 #cpam2-root .bill-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
 #cpam2-root .split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -139,15 +142,25 @@ add_shortcode('cpam_calculateur2', function () {
 #cpam2-root .rules ul{margin:6px 0 0;padding-left:18px}
 #cpam2-root .foot{margin-top:28px;font-size:13px;color:var(--muted);line-height:1.5}
 
-/* Barre basse sur mobile */
+/* Une seule colonne quand le conteneur (zone de contenu du thème) est étroit */
 #cpam2-root .bar{display:none}
-@media (max-width:980px){
+@container cpam2 (max-width: 980px){
+  #cpam2-root .cols{grid-template-columns:1fr}
   #cpam2-root .bill{position:static}
   #cpam2-root .bill-body{max-height:none}
   #cpam2-root .bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));align-items:center;justify-content:space-between;gap:12px}
   #cpam2-root .bar b{font-size:20px}
   #cpam2-root .wrap{padding-left:16px;padding-right:16px}
+}
+@container cpam2 (max-width: 700px){
+  #cpam2-root .sec{grid-template-columns:1fr;gap:12px}
   #cpam2-root .row.two{grid-template-columns:1fr}
+  #cpam2-root .head .dept{min-width:0;width:100%}
+}
+/* Navigateurs sans container queries : repli sur la largeur de la fenêtre */
+@supports not (container-type: inline-size){
+  @media (max-width:1100px){#cpam2-root .cols{grid-template-columns:1fr}#cpam2-root .bill{position:static}#cpam2-root .bill-body{max-height:none}}
+  @media (max-width:700px){#cpam2-root .sec{grid-template-columns:1fr}#cpam2-root .row.two{grid-template-columns:1fr}}
 }
 @media (prefers-reduced-motion:reduce){#cpam2-root *{transition:none !important}}
 CSS;
@@ -575,7 +588,7 @@ JS;
                 <div class="field"><label class="lbl" for="cpam2-seuil">Seuil « patient seul »</label><div class="unit"><input id="cpam2-seuil" class="ctl" type="number" min="30" step="1" value="30"><span>km</span></div></div>
                 <div class="field"><label class="lbl" for="cpam2-suppLocal">Autre supplément local validé Cnam</label><div class="unit"><input id="cpam2-suppLocal" class="ctl" type="number" min="0" step="0.01" placeholder="0"><span>€</span></div></div>
               </div>
-              <label class="check" style="margin-top:8px"><input type="checkbox" id="cpam2-cd" checked> Supplément courte distance de 2 € pour les trajets de moins de 10 km (à partir du 01/08/2026)</label>
+              <label class="check" style="margin-top:8px"><input type="checkbox" id="cpam2-cd" checked> Ma convention locale prévoit le supplément courte distance : 2 € ajoutés automatiquement aux seuls trajets de moins de 10 km, sans forfait Grande ville, effectués depuis le 01/08/2026</label>
             </div>
           </section>
 
